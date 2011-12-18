@@ -1,0 +1,7 @@
+NNRCCar - build a Neural Network Controlled self-driving car!
+
+
+android/ - An android app which streams video frames to the Driver app running on a PC.
+arduino/ - The arduino sketch allowing Driver to send commands to the car via Serial interface.
+Driver/  - Java applet which acts as both a TCP server, receiving streamed image frames from a video streaming app on a phone and a user interface allowing a human driver to control the car with the cursor keys or mouse
+train/   - Octave code to train the neural network.
