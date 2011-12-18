@@ -1,6 +1,8 @@
 %% NNRCCar - training code.
 %
-% This code is based on Exercise 4 of the ml-class.org machine learning course.
+% This code works with a solution to Exercise 4 of the ml-class.org machine learning course.
+% Since the terms of use of the ml class exercises do not permit further distribution, I
+% can't share that code here. [http://www.ml-class.org/course/auth/tos]
 % To use, copy nnrccar.m into the directory where you have already completed
 % exercise 4.
 
