@@ -52,12 +52,11 @@ Train:
 
 Follow the instructions in train/README to get set up with a solution to Ex4, then Run octave and start the nnrccar script:
 
-```octave-3.4.0:4> cd train/
-octave-3.4.0:5> nnrccar
-
-Elapsed time is 233.526 seconds.
-Training Neural Network... 
-```
+    octave-3.4.0:4> cd train/
+    octave-3.4.0:5> nnrccar
+    
+    Elapsed time is 233.526 seconds.
+    Training Neural Network... 
 
 It will take ~4 mins for octave to load the training data, after which you'll see the status output from fmincfg showing the progress of training the network.  By default, 100 iterations of training will occur.
 
