@@ -1,20 +1,18 @@
 NNRCCar - build a Neural Network Controlled self-driving car!
 =============================================================
 
-```android/ - An android app which streams video frames to the Driver app running on a PC.
-arduino/ - The arduino sketch allowing Driver to send commands to the car via Serial interface.
-Driver/  - Java applet which acts as both a TCP server, receiving streamed image frames from a video streaming app on a phone
-      and a user interface allowing a human driver to control the car with the cursor keys or mouse
-train/   - Octave code to train the neural network.
-```
+    android/ - An android app which streams video frames to the Driver app running on a PC.
+    arduino/ - The arduino sketch allowing Driver to send commands to the car via Serial interface.
+    Driver/  - Java applet which acts as both a TCP server, receiving streamed image frames from a video streaming app on a phone and a user interface allowing a human driver to control the car with the cursor keys or mouse
+    train/   - Octave code to train the neural network.
+
 BUILD / QUICKSTART
 ------------------
 
 To build and install the android app (using your default Android SDK and device):
 
-```cd android/
-ant install
-```
+    cd android/
+    ant install
 
 Flash the Arduino sketch to your arduino by opening the serialrccar sketch in the Arduino IDE and clicking Upload.  Note the USB serial port your Arduino board is connected to (available in Tools -> Serial Port) as you will need to know it later.
 
@@ -22,14 +20,13 @@ Driver depends on the RxTx Serial library and Apache Commons Math library - see 
 
 Build the Driver app
 
-```cd Driver/
-ant
-```
+    cd Driver/
+    ant
+
 
 Run the Driver app
 
-```ant Driver [serial port path]
-```
+    ant Driver [serial port path]
 
 * [serial port path] is the path to the serial port connected to your Arduino board - it's the same
   as the one used by the Arduino IDE so the value noted earlier is what you need.
@@ -54,6 +51,7 @@ Pre-process the recorded data into octave matrices:
 Train:
 
 Follow the instructions in train/README to get set up with a solution to Ex4, then Run octave and start the nnrccar script:
+
 ```octave-3.4.0:4> cd train/
 octave-3.4.0:5> nnrccar
 
