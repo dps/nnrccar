@@ -52,7 +52,10 @@ Follow the instructions in train/README to get set up with a solution to Ex4, th
 octave-3.4.0:4> cd train/
 octave-3.4.0:5> nnrccar
 
-It will take ~2 mins for octave to load the training data, after which you'll see the status output from fmincfg showing the progress of training the network.  By default, 100 iterations of training will occur.
+Elapsed time is 233.526 seconds.
+Training Neural Network... 
+
+It will take ~4 mins for octave to load the training data, after which you'll see the status output from fmincfg showing the progress of training the network.  By default, 100 iterations of training will occur.
 
 Once trained, the script will write out the parameters for the two sets of connections in Theta1.dat and Theta2.dat.
 
