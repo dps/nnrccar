@@ -6,6 +6,10 @@ NNRCCar - build a Neural Network Controlled self-driving car!
     Driver/  - Java applet which acts as both a TCP server, receiving streamed image frames from a video streaming app on a phone and a user interface allowing a human driver to control the car with the cursor keys or mouse
     train/   - Octave code to train the neural network.
 
+ABOUT
+=====
+Read the explanation and watch videos of the car in action at <a href="http://blog.davidsingleton.org/nnrccar">blog.davidsingleton.org/nnrccar</a>.
+
 BUILD / QUICKSTART
 ------------------
 
