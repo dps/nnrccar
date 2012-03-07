@@ -8,6 +8,7 @@
 #include <iostream>           // For cout, cerr
 #include <cstdlib>            // For atoi()  
 #include <pthread.h>          // For POSIX threads  
+#include <stdio.h>
 
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>

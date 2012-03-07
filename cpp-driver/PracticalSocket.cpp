@@ -37,6 +37,8 @@
 #endif
 
 #include <errno.h>             // For errno
+#include <cstring>             // For memset, strerror
+#include <cstdlib>             // For atoi
 
 using namespace std;
 
