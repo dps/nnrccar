@@ -9,7 +9,6 @@
 #include <cstdlib>            // For atoi()  
 #include <pthread.h>          // For POSIX threads  
 #include <stdio.h>
-#include <queue>
 
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
@@ -18,6 +17,7 @@
 #endif
 
 #include "FeatureStreamer.h"
+#include "Mailbox.h"
 
 double m[] = {
     3, 1, 3,
@@ -58,8 +58,7 @@ void *ConsumerThreadMain(void *arg);               // Main program of a thread
 
 struct Handle {
   TCPSocket* socket;
-  pthread_mutex_t mutex;
-  queue<Frame* > * q;
+  Mailbox<Frame>* mailbox;
 };
 
 int main(int argc, char *argv[]) {
@@ -72,15 +71,13 @@ int main(int argc, char *argv[]) {
     
   unsigned short echoServPort = atoi(argv[1]);    // First arg:  local port
 
-  pthread_mutex_t mainMutex = PTHREAD_MUTEX_INITIALIZER;
-  queue<Frame *> mainQueue;
-  
+  Mailbox<Frame> mailbox;
 
   pthread_t consumerThreadID;
   Handle consumerHandle;
   consumerHandle.socket = NULL;
-  consumerHandle.mutex = mainMutex;
-  consumerHandle.q = &mainQueue;
+  consumerHandle.mailbox = &mailbox;
+
   if (pthread_create(&consumerThreadID, NULL, ConsumerThreadMain, 
 		     (void *) &consumerHandle) != 0) {
     cerr << "Unable to create thread" << endl;
@@ -98,8 +95,7 @@ int main(int argc, char *argv[]) {
       pthread_t threadID;              // Thread ID from pthread_create()
       Handle handle;
       handle.socket = clntSock;
-      handle.mutex = mainMutex;
-      handle.q = &mainQueue;
+      handle.mailbox = &mailbox;
       if (pthread_create(&threadID, NULL, ThreadMain, 
 			 (void *) &handle) != 0) {
 	cerr << "Unable to create thread" << endl;
@@ -111,7 +107,6 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   // NOT REACHED
-  pthread_mutex_destroy(&mainMutex);
   return 0;
 }
 
@@ -131,8 +126,7 @@ void HandleTCPClient(Handle* handle) {
   }
   cout << " with thread " << pthread_self() << endl;
   
-  FeatureStreamer* streamer = new FeatureStreamer(sock, handle->q,
-						  handle->mutex);
+  FeatureStreamer* streamer = new FeatureStreamer(sock, handle->mailbox);
   streamer->Stream();
 
   delete streamer;
@@ -155,6 +149,12 @@ void *ConsumerThreadMain(void *handl) {
   pthread_detach(pthread_self()); 
   
   Handle* handle = (Handle*) handl;
+
+  while(true) {
+    Frame* frame = handle->mailbox->blockingFetch();
+    cout << "Frame! " << frame->width_ << "x" << frame->height_ << endl;
+    delete frame;
+  }
 
   cout << "Consumer Thread exiting" << endl;
 

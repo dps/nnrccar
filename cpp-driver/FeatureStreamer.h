@@ -3,9 +3,9 @@
 
 #include <string>            // For string
 #include <exception>         // For exception class
-#include <queue>
 #include <pthread.h>
 
+#include "Mailbox.h"
 #include "PracticalSocket.h"
 
 using namespace std;
@@ -33,8 +33,7 @@ class Frame {
 class FeatureStreamer {
 public:
   ~FeatureStreamer();
-  FeatureStreamer(TCPSocket* socket, queue<Frame* >* queue,
-		  pthread_mutex_t mutex);
+  FeatureStreamer(TCPSocket* socket, Mailbox<Frame>* mailbox);
 
   void Stream();
   Frame* ReceiveFeatureFrame();
@@ -43,9 +42,9 @@ public:
   int ReceiveBytes(unsigned char* buffer, int len);
 
 protected:
-  TCPSocket* socket_;    // not owned
-  queue<Frame* >* queue_; // not owned
-  pthread_mutex_t mutex_;
+  TCPSocket* socket_;       // not owned
+  Mailbox<Frame>* mailbox_; // not owned
+
 };
 
 #endif

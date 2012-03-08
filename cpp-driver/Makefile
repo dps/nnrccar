@@ -2,7 +2,7 @@ CC=g++
 
 all: cpp-driver
 
-cpp-driver:
+cpp-driver: main.cpp PracticalSocket.cpp FeatureStreamer.cpp
 	$(CC) main.cpp PracticalSocket.cpp FeatureStreamer.cpp -o cpp-driver -lblas -lpthread
 
 test-mailbox:

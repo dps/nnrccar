@@ -17,17 +17,16 @@ FeatureStreamer::~FeatureStreamer() {
 }
 
 FeatureStreamer::FeatureStreamer(TCPSocket* socket,
-				 queue<Frame* >* queue,
-				 pthread_mutex_t mutex) {
+				 Mailbox<Frame>* mailbox) {
   socket_ = socket;
-  queue_ = queue;
-  mutex_ = mutex;
+  mailbox_ = mailbox;
 }
 
 void FeatureStreamer::Stream() {
-  Frame* frame = ReceiveFeatureFrame();
-  cout << frame->width_ << "\t" << frame->height_ << endl;
-  delete frame;
+  while (true) {
+    Frame* frame = ReceiveFeatureFrame();
+    mailbox_->post(frame);
+  }
 }
 
 Frame* FeatureStreamer::ReceiveFeatureFrame() {
