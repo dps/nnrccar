@@ -150,10 +150,20 @@ void *ConsumerThreadMain(void *handl) {
   
   Handle* handle = (Handle*) handl;
 
+  time_t lap = time(NULL);
+  int count = 0;
   while(true) {
     Frame* frame = handle->mailbox->blockingFetch();
+    count++;
     cout << "Frame! " << frame->width_ << "x" << frame->height_ << endl;
     delete frame;
+
+    time_t now = time(NULL);
+    if ((now - 10) >= lap) {
+      cerr << "nn: " << (count / (now - lap)) << " fps" << endl;
+      count = 0;
+      lap = time(NULL);
+    }
   }
 
   cout << "Consumer Thread exiting" << endl;

@@ -1,5 +1,7 @@
-#include "FeatureStreamer.h"
 #include <iostream>
+#include <time.h>
+
+#include "FeatureStreamer.h"
 
 using namespace std;
 
@@ -23,9 +25,20 @@ FeatureStreamer::FeatureStreamer(TCPSocket* socket,
 }
 
 void FeatureStreamer::Stream() {
+  time_t lap = time(NULL);
+  int count = 0;
   while (true) {
     Frame* frame = ReceiveFeatureFrame();
+    count++;
     mailbox_->post(frame);
+
+    time_t now = time(NULL);
+    if ((now - 10) >= lap) {
+      cerr << "network: " << (count / (now - lap)) << " fps" << endl;
+      count = 0;
+      lap = time(NULL);
+    }
+
   }
 }
 
