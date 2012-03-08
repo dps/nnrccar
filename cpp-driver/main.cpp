@@ -59,7 +59,7 @@ void *ConsumerThreadMain(void *arg);               // Main program of a thread
 struct Handle {
   TCPSocket* socket;
   pthread_mutex_t mutex;
-  queue<Frame* >* queue;
+  queue<Frame* > * q;
 };
 
 int main(int argc, char *argv[]) {
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
   Handle consumerHandle;
   consumerHandle.socket = NULL;
   consumerHandle.mutex = mainMutex;
-  consumerHandle.queue = &mainQueue;
+  consumerHandle.q = &mainQueue;
   if (pthread_create(&consumerThreadID, NULL, ConsumerThreadMain, 
 		     (void *) &consumerHandle) != 0) {
     cerr << "Unable to create thread" << endl;
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
       Handle handle;
       handle.socket = clntSock;
       handle.mutex = mainMutex;
-      handle.queue = &mainQueue;
+      handle.q = &mainQueue;
       if (pthread_create(&threadID, NULL, ThreadMain, 
 			 (void *) &handle) != 0) {
 	cerr << "Unable to create thread" << endl;
@@ -131,7 +131,7 @@ void HandleTCPClient(Handle* handle) {
   }
   cout << " with thread " << pthread_self() << endl;
   
-  FeatureStreamer* streamer = new FeatureStreamer(sock, handle->queue,
+  FeatureStreamer* streamer = new FeatureStreamer(sock, handle->q,
 						  handle->mutex);
   streamer->Stream();
 
