@@ -18,6 +18,7 @@
 
 #include "FeatureStreamer.h"
 #include "Mailbox.h"
+#include "NeuralNetwork.h"
 
 double m[] = {
     3, 1, 3,
@@ -63,7 +64,7 @@ struct Handle {
 
 int main(int argc, char *argv[]) {
   test_blas();
-  
+
   if (argc != 2) {                 // Test for correct number of arguments  
     cerr << "Usage: " << argv[0] << " <Server Port> " << endl;
     exit(1);
@@ -150,6 +151,9 @@ void *ConsumerThreadMain(void *handl) {
   
   Handle* handle = (Handle*) handl;
 
+  NeuralNetwork* nn = new NeuralNetwork(string("data/theta1.dat"),
+					string("data/theta2.dat"));
+
   time_t lap = time(NULL);
   int count = 0;
   while(true) {
@@ -167,6 +171,6 @@ void *ConsumerThreadMain(void *handl) {
   }
 
   cout << "Consumer Thread exiting" << endl;
-
+  delete nn;
   return NULL;
 }
