@@ -9,12 +9,15 @@
 #include <cstdlib>            // For atoi()  
 #include <pthread.h>          // For POSIX threads  
 #include <stdio.h>
+#include <queue>
 
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
 #else
 #include <cblas.h>
 #endif
+
+#include "FeatureStreamer.h"
 
 double m[] = {
     3, 1, 3,
@@ -49,10 +52,15 @@ int test_blas() {
 }
 
 
-const int RCVBUFSIZE = 32;
-
 void HandleTCPClient(TCPSocket *sock);     // TCP client handling function
 void *ThreadMain(void *arg);               // Main program of a thread  
+void *ConsumerThreadMain(void *arg);               // Main program of a thread  
+
+struct Handle {
+  TCPSocket* socket;
+  pthread_mutex_t mutex;
+  queue<Frame* >* queue;
+};
 
 int main(int argc, char *argv[]) {
   test_blas();
@@ -62,8 +70,23 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
     
-  unsigned short echoServPort = atoi(argv[1]);    // First arg:  local port  
+  unsigned short echoServPort = atoi(argv[1]);    // First arg:  local port
+
+  pthread_mutex_t mainMutex = PTHREAD_MUTEX_INITIALIZER;
+  queue<Frame *> mainQueue;
   
+
+  pthread_t consumerThreadID;
+  Handle consumerHandle;
+  consumerHandle.socket = NULL;
+  consumerHandle.mutex = mainMutex;
+  consumerHandle.queue = &mainQueue;
+  if (pthread_create(&consumerThreadID, NULL, ConsumerThreadMain, 
+		     (void *) &consumerHandle) != 0) {
+    cerr << "Unable to create thread" << endl;
+    exit(1);
+  }
+
   try {
     TCPServerSocket servSock(echoServPort);   // Socket descriptor for server  
         
@@ -72,9 +95,13 @@ int main(int argc, char *argv[]) {
       TCPSocket *clntSock = servSock.accept();
       
       // Create client thread  
-      pthread_t threadID;              // Thread ID from pthread_create()  
+      pthread_t threadID;              // Thread ID from pthread_create()
+      Handle handle;
+      handle.socket = clntSock;
+      handle.mutex = mainMutex;
+      handle.queue = &mainQueue;
       if (pthread_create(&threadID, NULL, ThreadMain, 
-			 (void *) clntSock) != 0) {
+			 (void *) &handle) != 0) {
 	cerr << "Unable to create thread" << endl;
 	exit(1);
       }
@@ -84,12 +111,13 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   // NOT REACHED
-    
+  pthread_mutex_destroy(&mainMutex);
   return 0;
 }
 
 // TCP client handling function
-void HandleTCPClient(TCPSocket *sock) {
+void HandleTCPClient(Handle* handle) {
+  TCPSocket* sock = handle->socket;
   cout << "Handling client ";
   try {
     cout << sock->getForeignAddress() << ":";
@@ -102,25 +130,33 @@ void HandleTCPClient(TCPSocket *sock) {
     cerr << "Unable to get foreign port" << endl;
   }
   cout << " with thread " << pthread_self() << endl;
-    
-  // Send received string and receive again until the end of transmission
-  char echoBuffer[RCVBUFSIZE];
-  int recvMsgSize;
-  while ((recvMsgSize = sock->recv(echoBuffer, RCVBUFSIZE)) > 0) { // Zero means
-    // end of transmission
-    // Echo message back to client
-    sock->send(echoBuffer, recvMsgSize);
-  }
-  // Destructor closes socket
+  
+  FeatureStreamer* streamer = new FeatureStreamer(sock, handle->queue,
+						  handle->mutex);
+  streamer->Stream();
+
+  delete streamer;
 }
 
-void *ThreadMain(void *clntSock) {
+void *ThreadMain(void *handl) {
   // Guarantees that thread resources are deallocated upon return  
   pthread_detach(pthread_self()); 
   
+  Handle* handle = (Handle*) handl;
   // Extract socket file descriptor from argument  
-  HandleTCPClient((TCPSocket *) clntSock);
+  HandleTCPClient(handle);
   
-  delete (TCPSocket *) clntSock;
+  delete (TCPSocket *) handle->socket;
+  return NULL;
+}
+
+void *ConsumerThreadMain(void *handl) {
+  // Guarantees that thread resources are deallocated upon return  
+  pthread_detach(pthread_self()); 
+  
+  Handle* handle = (Handle*) handl;
+
+  cout << "Consumer Thread exiting" << endl;
+
   return NULL;
 }
