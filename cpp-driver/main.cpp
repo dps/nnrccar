@@ -159,10 +159,10 @@ void *ConsumerThreadMain(void *handl) {
   while(true) {
     Frame* frame = handle->mailbox->blockingFetch();
     count++;
-    cout << "Frame! " << frame->width_ << "x" << frame->height_ << endl;
+    //cout << "Frame! " << frame->width_ << "x" << frame->height_ << endl;
     double* res = nn->predict(frame);
-    cout << " P: " << res[0] << " " << res[1]
-	 << " " << res[2] << " " << res[3] << endl;
+
+    printf("%f %f %f %f\n\r", res[0], res[1], res[2], res[3]);
     delete res;
     delete frame;
 
