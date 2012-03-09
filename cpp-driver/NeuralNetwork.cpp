@@ -20,7 +20,7 @@ double* NeuralNetwork::predict(Frame* frame) {
   double* xs = new double[frame->width_ * frame->height_ + 1];
   xs[0] = 1.0;
   for (int i = 0; i < frame->width_ * frame->height_; i++) {
-    xs[i + i] = (double) frame->pixels_[i];
+    xs[i + 1] = (double) frame->pixels_[i];
   }
 
   // x = (1 x 25345)
