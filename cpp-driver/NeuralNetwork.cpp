@@ -1,19 +1,71 @@
 #include <iostream>
 #include <fstream>
+#include <math.h>
 
 #include "NeuralNetwork.h"
 
 NeuralNetwork::NeuralNetwork(string theta1_filename, string theta2_filename) {
-  theta1Transpose_ = read2DMatrixFromFile(theta1_filename);
-  theta2Transpose_ = read2DMatrixFromFile(theta2_filename);
+  theta1_ = read2DMatrixFromFile(theta1_filename);
+  theta2_ = read2DMatrixFromFile(theta2_filename);
 }
 
 NeuralNetwork::~NeuralNetwork() {
-  delete theta1Transpose_;
-  delete theta2Transpose_;
+  delete theta1_.data;
+  delete theta2_.data;
 }
 
-double* read2DMatrixFromFile(string filename) {
+double* NeuralNetwork::predict(Frame* frame) {
+  double* xs = new double[frame->width_ * frame->height_ + 1];
+  xs[0] = 1.0;
+  for (int i = 0; i < frame->width_ * frame->height_; i++) {
+    xs[i + i] = (double) frame->pixels_[i];
+  }
+
+  // x = (1 x 25345)
+  // tt = (25345 x 64)
+  // res = (1 x 64)
+
+  int pixels = frame->width_ * frame->height_ + 1;
+  double* mul = new double[theta1_.rows];
+
+  cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans,
+	      1, theta1_.rows, pixels, 1.0,
+	      xs, pixels, theta1_.data, theta1_.cols, 1.0, mul, theta1_.rows);
+
+  //for (int i = 0; i < theta1_.rows; i++) {
+  //  cout << mul[i] << endl;
+  //}
+  delete xs;
+
+  double* h1 = new double[theta1_.rows + 1];
+  h1[0] = 1.0;
+  for (int j = 0; j < theta1_.rows; j++) {
+    h1[j + 1] = sigmoid(mul[j]);
+  }
+
+  delete mul;
+
+  // h1 = (1 x 65)
+  // t2t = (65 x 4)
+  // o = (1 x 4)
+  double* res = new double[theta2_.rows];
+
+  cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans,
+	      1, theta2_.rows, theta2_.cols, 1.0,
+	      h1, theta2_.cols, theta2_.data, theta2_.cols, 1.0,
+	      res, theta2_.rows);
+
+  for (int j = 0; j < theta2_.rows; j++) {
+    res[j] = sigmoid(res[j]);
+  }
+  return res;	      
+}
+
+inline double sigmoid(double x) {
+  return (1.0 / (1.0 + exp(-x)));
+}
+
+Matrix read2DMatrixFromFile(string filename) {
   /**
      # Created by Octave 3.4.0, Thu Dec 22 18:40:26 2011 GMT
      # name: Theta1
@@ -69,5 +121,10 @@ double* read2DMatrixFromFile(string filename) {
     }
   }
 
-  return NULL;
+  Matrix mat;
+  mat.rows = rows;
+  mat.cols = cols;
+  mat.data = ret;
+  // Caller takes ownership of the data
+  return mat;
 }

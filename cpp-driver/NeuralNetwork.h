@@ -8,18 +8,29 @@
 #endif
 
 #include <string>
+#include "FeatureStreamer.h"
 
 using namespace std;
+
+struct Matrix {
+  double* data;
+  int rows;
+  int cols;
+};
 
 class NeuralNetwork {
  public:
   NeuralNetwork(string theta1_filename, string theta2_filename);
   ~NeuralNetwork();
+
+  double* predict(Frame* frame);
  private:
-  double* theta1Transpose_;
-  double* theta2Transpose_;
+  Matrix theta1_;
+  Matrix theta2_;
 };
 
-double* read2DMatrixFromFile(string filename);
+Matrix read2DMatrixFromFile(string filename);
+
+double sigmoid(double x);
 
 #endif
