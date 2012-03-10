@@ -9,6 +9,7 @@
 #include <cstdlib>            // For atoi()  
 #include <pthread.h>          // For POSIX threads  
 #include <stdio.h>
+#include <fstream>
 
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
@@ -60,17 +61,19 @@ void *ConsumerThreadMain(void *arg);               // Main program of a thread
 struct Handle {
   TCPSocket* socket;
   Mailbox<Frame>* mailbox;
+  char* tty;
 };
 
 int main(int argc, char *argv[]) {
   test_blas();
 
-  if (argc != 2) {                 // Test for correct number of arguments  
-    cerr << "Usage: " << argv[0] << " <Server Port> " << endl;
+  if (argc != 3) {                 // Test for correct number of arguments  
+    cerr << "Usage: " << argv[0] << " <Server Port> <tty>" << endl;
     exit(1);
   }
     
   unsigned short echoServPort = atoi(argv[1]);    // First arg:  local port
+  char* tty = argv[2];
 
   Mailbox<Frame> mailbox;
 
@@ -78,6 +81,7 @@ int main(int argc, char *argv[]) {
   Handle consumerHandle;
   consumerHandle.socket = NULL;
   consumerHandle.mailbox = &mailbox;
+  consumerHandle.tty = argv[2];
 
   if (pthread_create(&consumerThreadID, NULL, ConsumerThreadMain, 
 		     (void *) &consumerHandle) != 0) {
@@ -145,6 +149,29 @@ void *ThreadMain(void *handl) {
   return NULL;
 }
 
+static const int NN_CONFIDENCE_THRESHOLD = 0.4;
+
+char controlChar(bool left, bool right, bool forward, bool reverse) {
+  char outCh = 'p';
+  if (left && right) {
+    left = right = false;
+  }
+  if (left) {
+    outCh |= 0x01;
+  }
+  if (right) {
+    outCh |= 0x02;
+  }
+  if (forward) {
+    outCh |= 0x04;
+  }
+  if (reverse) {
+    outCh |= 0x08;
+  }
+  return outCh;
+}
+
+
 void *ConsumerThreadMain(void *handl) {
   // Guarantees that thread resources are deallocated upon return  
   pthread_detach(pthread_self()); 
@@ -154,6 +181,8 @@ void *ConsumerThreadMain(void *handl) {
   NeuralNetwork* nn = new NeuralNetwork(string("data/theta1.dat"),
 					string("data/theta2.dat"));
 
+  ofstream tty(handle->tty);
+
   time_t lap = time(NULL);
   int count = 0;
   while(true) {
@@ -162,7 +191,14 @@ void *ConsumerThreadMain(void *handl) {
     //cout << "Frame! " << frame->width_ << "x" << frame->height_ << endl;
     double* res = nn->predict(frame);
 
-    printf("%f %f %f %f\n\r", res[0], res[1], res[2], res[3]);
+    bool left = res[0] > NN_CONFIDENCE_THRESHOLD;
+    bool right = res[1] > NN_CONFIDENCE_THRESHOLD;
+    bool forward = res[2] > NN_CONFIDENCE_THRESHOLD;
+    bool back = res[3] > NN_CONFIDENCE_THRESHOLD;
+
+    printf("%d %d %d %d\n\r", left, right, forward, back);
+
+    tty.put(controlChar(left, right, forward, back));
     delete res;
     delete frame;
 
@@ -174,6 +210,7 @@ void *ConsumerThreadMain(void *handl) {
     }
   }
 
+  tty.close();
   cout << "Consumer Thread exiting" << endl;
   delete nn;
   return NULL;
