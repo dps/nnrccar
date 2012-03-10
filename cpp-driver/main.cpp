@@ -149,7 +149,7 @@ void *ThreadMain(void *handl) {
   return NULL;
 }
 
-static const int NN_CONFIDENCE_THRESHOLD = 0.4;
+static const double NN_CONFIDENCE_THRESHOLD = 0.4;
 
 char controlChar(bool left, bool right, bool forward, bool reverse) {
   char outCh = 'p';
@@ -183,6 +183,8 @@ void *ConsumerThreadMain(void *handl) {
 
   ofstream tty(handle->tty);
 
+  printf("tty open %d", tty.is_open());
+
   time_t lap = time(NULL);
   int count = 0;
   while(true) {
@@ -196,9 +198,12 @@ void *ConsumerThreadMain(void *handl) {
     bool forward = res[2] > NN_CONFIDENCE_THRESHOLD;
     bool back = res[3] > NN_CONFIDENCE_THRESHOLD;
 
-    printf("%d %d %d %d\n\r", left, right, forward, back);
+    char put = controlChar(left, right, forward, back);
+    printf("%f %f %f %f\n\r",res[0], res[1], res[2], res[3]);
+    printf("%d %d %d %d %c\n\r", left, right, forward, back, put);
 
-    tty.put(controlChar(left, right, forward, back));
+    tty.put(put);
+    tty.flush();
     delete res;
     delete frame;
 
