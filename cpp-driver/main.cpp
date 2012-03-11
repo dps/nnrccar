@@ -193,8 +193,10 @@ void *ConsumerThreadMain(void *handl) {
     //cout << "Frame! " << frame->width_ << "x" << frame->height_ << endl;
     double* res = nn->predict(frame);
 
-    bool left = res[0] > NN_CONFIDENCE_THRESHOLD;
-    bool right = res[1] > NN_CONFIDENCE_THRESHOLD;
+    bool left = res[0] > NN_CONFIDENCE_THRESHOLD ||
+      (res[0] > 0.3 && res[0] > res[1]);;
+    bool right = res[1] > NN_CONFIDENCE_THRESHOLD ||
+      (res[1] > 0.3 && res[1] > res[0]);
     bool forward = res[2] > NN_CONFIDENCE_THRESHOLD;
     bool back = res[3] > NN_CONFIDENCE_THRESHOLD;
 
