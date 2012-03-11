@@ -5,27 +5,11 @@
 #include <exception>         // For exception class
 #include <pthread.h>
 
+#include "Frame.h"
 #include "Mailbox.h"
 #include "PracticalSocket.h"
 
 using namespace std;
-
-class Frame {
- public:
-  ~Frame() {
-    delete pixels_;
-    delete accels_;
-  };
-  Frame(int width, int height, int accel_features,
-	unsigned char* pixels, int* accels);
-
- public:
-  int width_;
-  int height_;
-  int accel_features_;
-  unsigned char* pixels_;
-  int* accels_;
-};
 
 /**
  *   Feature Streamer

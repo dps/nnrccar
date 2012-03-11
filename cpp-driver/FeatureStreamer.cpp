@@ -5,16 +5,6 @@
 
 using namespace std;
 
-Frame::Frame(int width, int height, int accel_features,
-	     unsigned char* pixels, int* accels) {
-  width_ = width;
-  height_ = height;
-  accel_features_ = accel_features;
-  pixels_ = pixels;
-  accels_ = accels;
-}
-
-
 FeatureStreamer::~FeatureStreamer() {
 }
 
@@ -58,7 +48,9 @@ Frame* FeatureStreamer::ReceiveFeatureFrame() {
     accels[i] = ReceiveInt();
   }
 
-  return new Frame(w, h, ac, pixels, accels);
+  // At present, we discard the accelerometer features for prediction
+  // by setting ac=0
+  return new Frame(w, h, 0, pixels, accels);
 }
 
 int FeatureStreamer::ReceiveInt() {

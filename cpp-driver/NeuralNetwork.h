@@ -8,7 +8,7 @@
 #endif
 
 #include <string>
-#include "FeatureStreamer.h"
+#include "Frame.h"
 
 using namespace std;
 

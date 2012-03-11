@@ -17,26 +17,24 @@ NeuralNetwork::~NeuralNetwork() {
 }
 
 double* NeuralNetwork::predict(Frame* frame) {
-  double* xs = new double[frame->width_ * frame->height_ + 1];
+  int pixels = frame->width_ * frame->height_ + 1 + frame->accel_features_;
+
+  double* xs = new double[pixels];
   xs[0] = 1.0;
-  for (int i = 0; i < frame->width_ * frame->height_; i++) {
-    xs[i + 1] = (double) frame->pixels_[i];
+  for (int i = 0; i < pixels - 1; i++) {
+    xs[i + 1] = frame->pixels_[i];
   }
 
   // x = (1 x 25345)
   // tt = (25345 x 64)
   // res = (1 x 64)
 
-  int pixels = frame->width_ * frame->height_ + 1;
   double* mul = new double[theta1_.rows];
 
   cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans,
 	      1, theta1_.rows, pixels, 1.0,
-	      xs, pixels, theta1_.data, theta1_.cols, 1.0, mul, theta1_.rows);
+	      xs, pixels, theta1_.data, theta1_.cols, 0.0, mul, theta1_.rows);
 
-  //for (int i = 0; i < theta1_.rows; i++) {
-  //  cout << mul[i] << endl;
-  //}
   delete xs;
 
   double* h1 = new double[theta1_.rows + 1];
@@ -54,13 +52,13 @@ double* NeuralNetwork::predict(Frame* frame) {
 
   cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans,
 	      1, theta2_.rows, theta2_.cols, 1.0,
-	      h1, theta2_.cols, theta2_.data, theta2_.cols, 1.0,
+	      h1, theta2_.cols, theta2_.data, theta2_.cols, 0.0,
 	      res, theta2_.rows);
 
   for (int j = 0; j < theta2_.rows; j++) {
     res[j] = sigmoid(res[j]);
   }
-  return res;	      
+  return res;
 }
 
 inline double sigmoid(double x) {
