@@ -1,6 +1,8 @@
 NNRCCar - build a Neural Network Controlled self-driving car!
 =============================================================
 
+August 6th 2017: This project is very old and pretty much obsolete now. I hope it inspires you to learn about ML or build something fun, but I urge you not to replicate this build, but rather to head on over to the much more modern <a href="http://www.donkeycar.com">Donkey Car</a> project once you've finished reading!
+
     android/ - An android app which streams video frames to the Driver app running on a PC.
     arduino/ - The arduino sketch allowing Driver to send commands to the car via Serial interface.
     Driver/  - Java applet which acts as both a TCP server, receiving streamed image frames from a video streaming app on a phone and a user interface allowing a human driver to control the car with the cursor keys or mouse
